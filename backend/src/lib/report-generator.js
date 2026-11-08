@@ -36,6 +36,11 @@ async function generateDoc(audit) {
     var opts = {};
     // opts.centered = true;
     opts.getImage = function(tagValue, tagName) {
+        // BEGIN CUSTOM ADDITION
+        if (tagName.split(' ')[0].startsWith("sliderImage")) {
+            return fs.readFileSync(tagValue);
+        }
+        // END CUSTOM ADDITION
         if (tagValue !== "undefined") {
             tagValue = tagValue.split(",")[1];
             return Buffer.from(tagValue, 'base64');
@@ -62,6 +67,20 @@ async function generateDoc(audit) {
                     width = 400;
                 }
             }
+            // BEGIN CUSTOM ADDITION
+            else if (tagName.split(' ')[0] == "sliderImage.cvss") {
+                width = 220;
+                height = 20;
+            }
+            else if (tagName.split(' ')[0] == "sliderImage.kir") {
+                width = 250;
+                height = 20;
+            }
+            else if (tagName.split(' ')[0] == "sliderImage.rnv") {
+                width = 500;
+                height = 30;
+            }
+            // END CUSTOM ADDITION
             else if (sizeObj.width > 600) {
                 var divider = sizeObj.width / 600;
                 width = 600;
@@ -143,6 +162,16 @@ function parser(tag) {
             }
         }
     }
+    // BEGIN CUSTOM ADDITION
+    if (tag === "$index") {
+        return {
+            get(scope, context) {
+                const indexes = context.scopePathItem;
+                return indexes[indexes.length - 1]+1;
+            }
+        }
+    }
+    // END CUSTOM ADDITION
     // We use the angularParser as the default fallback
     // If you don't wish to use the angularParser,
     // you can use the default parser as documented here:
@@ -602,6 +631,15 @@ async function prepAuditData(data, settings) {
     result.language = data.language || "undefined"
     result.scope = data.scope.toObject() || []
 
+    // BEGIN CUSTOM ADDITION
+    result.year = {
+        short: new Date().getFullYear().toString().slice(-2),
+        long:  new Date().getFullYear().toString(),
+        exec_short: new Date(data.date_start).getFullYear().toString().slice(-2),
+        exec_long:  new Date(data.date_start).getFullYear().toString(),
+    }
+    // END CUSTOM ADDITION
+
     result.findings = []
     for (var finding of data.findings) {
         var tmpFinding = {
@@ -615,6 +653,7 @@ async function prepAuditData(data, settings) {
             references: finding.references || [],
             poc: await splitHTMLParagraphs(finding.poc),
             affected: finding.scope || "",
+            affectedParseMode: finding.scopeMode || 'regex',  // CUSTOM ADDITION
             status: finding.status || "",
             category: $t(finding.category) || $t("No Category"),
             identifier: "IDX-" + utils.lPad(finding.identifier),
@@ -695,6 +734,24 @@ async function prepAuditData(data, settings) {
                 tmpFinding.cvss4Obj = cvss4StrToObject(tmpCVSS.vectorString)
             }
         }
+
+        // START CUSTOM ADDITION
+        tmpFinding.hasCVSS4 = finding.cvssv4 && finding.cvssv4.startsWith('CVSS:4.0');
+
+        tmpFinding.cvss3 = tmpFinding.cvss;
+        tmpFinding.cvss3Obj = tmpFinding.cvssObj;
+        if (tmpFinding.hasCVSS4) {  // Use cvss4 by default. TODO: Use default (configured) cvss version instead of cvss4.
+            tmpFinding.cvss = tmpFinding.cvss4;
+            tmpFinding.cvssObj = tmpFinding.cvss4Obj;
+        }
+
+        if (!('cvss' in tmpFinding)) {  // Make sure the finding always has at least a baseMetricScore and baseSeverity, to prevent issues elsewhere in filters.
+            tmpFinding.cvss = {
+                baseMetricScore: 0.0,
+                baseSeverity: 'None',
+            }
+        }
+        // END CUSTOM ADDITION
     
         if (finding.customFields) {
             for (field of finding.customFields) {

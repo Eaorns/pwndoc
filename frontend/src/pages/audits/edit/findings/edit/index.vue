@@ -341,6 +341,20 @@
                     <q-card class="bg-transparent" flat>
                         <q-card>
                             <q-card-section>
+                                <q-select
+                                    :label="$t('scopeMode')"
+                                    stack-label
+                                    class="col-md-6 col-12"
+                                    v-model="finding.scopeMode"
+                                    :options="[{label: $t('regex'), value: 'regex'},{label: $t('lines'), value: 'lines'}]"
+                                    map-options
+                                    emit-value
+                                    options-sanitize
+                                    outlined
+                                    :readonly="frontEndAuditState !== AUDIT_VIEW_STATE.EDIT"
+                                />
+                            </q-card-section>
+                            <q-card-section>
                                 <q-field 
                                 ref="affectedField"
                                 for="affectedField"
@@ -355,7 +369,7 @@
                                     <template v-slot="control">
                                         <basic-editor 
                                         v-model="finding.scope"
-                                        :toolbar="['format', 'marks', 'list']"
+                                        :toolbar="['format', 'marks', 'link']"
                                         :editable="isFieldEditable('scope')"
                                         fieldName="affectedField"
                                         :commentMode="commentMode && canCreateComment"

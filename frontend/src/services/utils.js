@@ -26,7 +26,13 @@ const ALLOWED_TAGS = [
   'pre',
   'img',
   'legend',
-  'comment'
+  'comment',
+  // BEGIN CUSTOM ADDITION
+  'table',
+  'tr',
+  'th',
+  'td'
+  // END CUSTOM ADDITION
 ]
 
 // Diff markers are added after content sanitize; allow them when purifying v-html diffs.

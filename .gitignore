@@ -4,7 +4,7 @@ node_modules
 mongo-data*
 report-templates
 custom-generator.js
-report-filters-custom.js
+# report-filters-custom.js  # custom addition: do actually commit this file
 
 # Quasar core related directories
 .quasar

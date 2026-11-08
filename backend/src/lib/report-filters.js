@@ -108,26 +108,36 @@ defaultFilters.d = function(input, s) {
 // Display "From ... to ..." dates nicely, removing redundant information when the start and end date occur during the same month or year: {date_start | fromTo: date_end:'fr' | capfirst}
 // To internationalize or customize the resulting string, associate the desired output to the strings "from {0} to {1}" and "on {0}" in your Pwndoc translate file.
 defaultFilters.fromTo = function(start, end, locale) {
+    // START CUSTOM ADDITIONS: Modified function in multiple places. Not sure why options values needed to be replaced ('2-digit' to 'long' for example), but copied from earlier commit by me in LBVDSEC/pwndoc-ng
     const start_date = new Date(start);
     const end_date = new Date(end);
     let options = {}, start_str = '', end_str = '';
-    let str = "from {0} to {1}";
 
     if (start_date == "Invalid Date" || end_date == "Invalid Date") return start;
 
-    options = {day: '2-digit', month: '2-digit', year: 'numeric'};
+    if (start_date.getDay() + 1 == end_date.getDay()) {
+        var str = "on {0} and {1}"
+    } else {
+        var str = "from {0} to {1}";
+    }
+
+    options = {weekday: "long", day: 'numeric', month: 'long', year: 'numeric'};
     end_str = end_date.toLocaleDateString(locale, options);
 
     if (start_date.getYear() != end_date.getYear()) {
-        options = {day: '2-digit', month: '2-digit', year: 'numeric'};
+        options = {weekday: "long", day: 'numeric', month: 'long', year: 'numeric'};
         start_str = start_date.toLocaleDateString(locale, options);
     }
     else if (start_date.getMonth() != end_date.getMonth()) {
-        options = {day: '2-digit', month: '2-digit'};
+        options = {weekday: "long", day: 'numeric', month: 'long'};
         start_str = start_date.toLocaleDateString(locale, options);
     }
     else if (start_date.getDay() != end_date.getDay()) {
-        options = {day: '2-digit'};
+        if (locale == 'nl') {
+            options = {weekday: "long", day: 'numeric'};
+        } else {
+            options = {weekday: "long", day: 'numeric', month: 'long'};
+        }
         start_str = start_date.toLocaleDateString(locale, options);
     }
     else {
@@ -135,7 +145,8 @@ defaultFilters.fromTo = function(start, end, locale) {
         str = "on {0}";
     }
 
-    return translate.translate(str).format(start_str, end_str);
+    return translate.translate(str, locale).format(start_str, end_str);
+    // END CUSTOM ADDITIONS
 }
 
 // Group input elements by an attribute: {#findings | groupBy: 'severity'}{title}{/findings | groupBy: 'severity'}
@@ -200,7 +211,10 @@ defaultFilters.loopObject = function(input) {
 // Lowercases input: {input | lower}
 subTemplatingFilters.lower = function(input) {
     if (!input || input == "undefined") return input;
-        return input.toLowerCase();
+    // BEGIN CUSTOM ADDITION: Make filter also work for objects
+    let val = (typeof input == 'object') ? input.value : input;
+    return val.toLowerCase();
+    // END CUSTOM ADDITION
 }
 
 // Creates a clickable "mailto:" link, assumes that input is an email address if

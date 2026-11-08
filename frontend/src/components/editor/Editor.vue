@@ -114,6 +114,17 @@
                 </div>
                 <q-separator vertical class="q-mx-sm" v-if="toolbar.indexOf('marks') !== -1" />
 
+                <div v-if="toolbar.indexOf('link') !== -1">
+                    <q-btn flat size="sm" dense
+                    :class="{ 'is-active': editor.isActive('link') }"
+                    @click="toggleLink"
+                    >
+                        <q-tooltip :delay="500" class="text-bold">Link</q-tooltip>
+                        <q-icon name="link" />
+                    </q-btn>
+                </div>
+                <q-separator vertical class="q-mx-sm" v-if="toolbar.indexOf('link') !== -1" />
+
                 <div v-if="toolbar.indexOf('list') !== -1">
                     <q-btn flat size="sm" dense
                     :class="{ 'is-active': editor.isActive('bulletList') }"
@@ -151,7 +162,65 @@
                     </q-btn>
                 </div>
                 <q-separator vertical class="q-mx-sm" v-if="toolbar.indexOf('code') !== -1" />
-                    
+                <!-- BEGIN CUSTOM ADDITION -->
+                <!-- Add Table -->
+                <div v-if="toolbar.indexOf('table') !== -1">
+                    <q-btn flat size="sm" dense
+                    @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()"
+                    >
+                        <q-tooltip :delay="500" content-class="text-bold">Insert table</q-tooltip>
+                        <q-icon name="mdi-table" />
+                    </q-btn>
+                    <q-btn flat size="sm" dense
+                    @click="editor.chain().focus().addColumnAfter().run()"
+                    >
+                        <q-tooltip :delay="500" content-class="text-bold">Add column</q-tooltip>
+                        <q-icon name="mdi-table-column-plus-after" />
+                    </q-btn>
+                    <q-btn flat size="sm" dense
+                    @click="editor.chain().focus().addRowAfter().run()"
+                    >
+                        <q-tooltip :delay="500" content-class="text-bold">Add row</q-tooltip>
+                        <q-icon name="mdi-table-row-plus-after" />
+                    </q-btn>
+                    <q-btn flat size="sm" dense
+                    @click="editor.chain().focus().toggleHeaderRow().run()"
+                    >
+                        <q-tooltip :delay="500" content-class="text-bold">Toggle header</q-tooltip>
+                        <q-icon name="mdi-page-layout-header" />
+                    </q-btn>
+                    <q-btn flat size="sm" dense
+                    @click="editor.chain().focus().mergeCells().run()"
+                    >
+                        <q-tooltip :delay="500" content-class="text-bold">Merge cells</q-tooltip>
+                        <q-icon name="mdi-call-merge" />
+                    </q-btn>
+
+                    <q-btn flat size="sm" dense
+                        @click="editor.chain().focus().deleteRow().run()" :disabled="!editor.can().deleteRow()"
+                    >
+                        <q-tooltip :delay="500" content-class="text-bold">Delete Table Row</q-tooltip>
+                        <q-icon name="mdi-table-row-remove" />
+                    </q-btn>
+
+                    <q-btn flat size="sm" dense
+                        @click="editor.chain().focus().deleteColumn().run()" :disabled="!editor.can().deleteColumn()"
+                    >
+                        <q-tooltip :delay="500" content-class="text-bold">Delete Table Column</q-tooltip>
+                        <q-icon name="mdi-table-column-remove" />
+                    </q-btn>
+
+                    <q-btn flat size="sm" dense
+                        @click="editor.chain().focus().deleteTable().run()"
+                        :disabled="!editor.can().deleteTable()"
+                    >
+                        <q-icon name="delete" />
+                        <q-tooltip :delay="500" content-class="text-bold">Delete table</q-tooltip>
+                    </q-btn>
+                </div>
+                <q-separator vertical class="q-mx-sm" v-if="toolbar.indexOf('table') !== -1"/>
+                <!-- Add Table end -->
+                <!-- END CUSTOM ADDITION -->
                 <div v-if="toolbar.indexOf('image') !== -1">
                     <q-tooltip :delay="500" class="text-bold">Insert Image</q-tooltip>
                     <q-btn
@@ -320,6 +389,13 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import Code from '@tiptap/extension-code'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
+// BEGIN CUSTOM ADDITION
+import Table from "@tiptap/extension-table";
+import TableCell from "@tiptap/extension-table-cell";
+import TableRow from "@tiptap/extension-table-row";
+import TableHeader from "@tiptap/extension-table-header";
+import Link from '@tiptap/extension-link'
+// END CUSTOM ADDITION
 import CustomImage from './editor-image'
 import Caption from './editor-caption'
 import Comment from './editor-comment'
@@ -356,7 +432,7 @@ export default {
         toolbar: {
             type: Array,
             default: function() {
-                return ['format', 'marks', 'list', 'code', 'image', 'caption']
+                return ['format', 'marks', 'link', 'list', 'code', 'table', 'image', 'caption']  // CUSTOM ADDITION: added table
             }
         },
         noAffix: {
@@ -428,6 +504,15 @@ export default {
                         code: false
                     }),
                     Underline,
+                    // BEGIN CUSTOM ADDITION
+                    Table.configure({
+                        resizable: true,
+                    }),
+                    TableRow,
+                    TableHeader,
+                    TableCell,
+                    Link,
+                    // END CUSTOM ADDITION
                     CustomImage,
                     Caption,
                     Comment,
@@ -632,6 +717,18 @@ export default {
     methods: {
         triggerImageUpload() {
             this.$refs.imageInput?.click()
+        },
+
+        toggleLink() {
+            if (this.editor.isActive('link')) {
+                this.editor.chain().focus().unsetLink().run()
+                return
+            }
+            const previousUrl = this.editor.getAttributes('link').href || 'https://'
+            const url = window.prompt('Enter the link URL', previousUrl)
+            if (url === null || url.trim() === '')
+                return
+            this.editor.chain().focus().setLink({ href: url.trim() }).run()
         },
 
         importImage(files) {
@@ -1038,6 +1135,7 @@ export default {
       }
 
       th {
+        background-color: #f1f3f5;
         font-weight: bold;
         text-align: left;
       }
