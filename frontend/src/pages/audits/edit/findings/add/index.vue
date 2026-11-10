@@ -99,6 +99,10 @@
                     <q-tr :props="props">
                         <q-td key="title" :props="props">
                             {{props.row.detail.title}}
+                            <!-- BEGIN CUSTOM ADDITION -->
+                            <q-badge v-if="props.row.status === 1" outline color="light-blue" class="vuln-status-chip q-ml-xs">{{$t('btn.new')}}</q-badge>
+                            <q-badge v-else-if="props.row.status === 2" outline color="orange" class="vuln-status-chip q-ml-xs">{{$t('btn.updates')}}</q-badge>
+                            <!-- END CUSTOM ADDITION -->
                             <q-btn dense round flat :icon="props.expand ? 'arrow_drop_up' : 'arrow_drop_down'" @click="props.expand = !props.expand" />
                         </q-td>
                         <q-td key="category" :props="props">

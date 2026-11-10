@@ -281,13 +281,29 @@
 												<q-item-section side v-if="!categoryFindings.sortOption.sortAuto && frontEndAuditState === AUDIT_VIEW_STATE.EDIT">
 													<q-icon data-testid="finding-drag-handle" name="mdi-arrow-split-horizontal" class="cursor-pointer handle" color="grey" />
 												</q-item-section>
+												<!-- BEGIN CUSTOM ADDITION -->
+												<q-item-section side style="padding-right: 5px; width: 20px;">
+													<i v-if="finding.parentId != null && finding.parentStatus === 1" style="color: var(--q-info)" class="fa fa-exclamation-triangle" aria-hidden="true">
+														<q-tooltip>This finding was imported, but it is newly created and may not yet have been reviewed.</q-tooltip>
+													</i>
+													<i v-else-if="finding.parentId != null && finding.parentStatus === 2" style="color: var(--q-warning)" class="fa fa-exclamation-triangle" aria-hidden="true">
+														<q-tooltip>This finding was imported, but it was recently updated and may need review.</q-tooltip>
+													</i>
+													<i v-else-if="finding.parentId != null" style="visibility: hidden"></i>
+													<i v-else class="fa fa-map-marker" aria-hidden="true">
+														<q-tooltip>This is a finding that was created locally for this audit.</q-tooltip>
+													</i>
+												</q-item-section>
+												<!-- END CUSTOM ADDITION -->
 												<q-item-section side>
 													<q-chip
 														class="text-white"
 														size="sm"
 														square
 														:style="`background: ${getFindingColor(finding)}`"
-													>{{getFindingSeverity(finding).substring(0,1)}}</q-chip>
+													>
+														{{ getFindingCvssScoreForDisplay(finding) }}  <!-- CUSTOM ADDITION: Changed from letter to actual score -->
+													</q-chip>
 												</q-item-section>
 												<q-item-section>
 													<span>{{finding.title}}</span>
@@ -710,6 +726,31 @@ export default {
 				}
 			}
 		},
+
+		// BEGIN CUSTOM ADDITION
+		getFindingCvssScore: function(finding, cvssVersion) {
+			let cvss = null
+
+			try {
+				if (this.$settings.report.public.scoringMethods.CVSS4 && finding.cvssv4) {
+					cvss = new Cvss4P0(finding.cvssv4).createJsonSchema()
+				} else if (this.$settings.report.public.scoringMethods.CVSS3 && finding.cvssv3) {
+					cvss = new Cvss3P1(finding.cvssv3).createJsonSchema()
+				}
+			} catch (err) {
+				// Invalid CVSS format — ignore and treat as no CVSS
+				return 0;
+			}
+			if (cvss && typeof cvss.baseScore === 'number')
+				return cvss.baseScore;
+			return 0;
+		},
+
+		getFindingCvssScoreForDisplay: function(finding, cvssVersion) {
+			let score = this.getFindingCvssScore(finding, cvssVersion);
+			return (score > 0) ? score : 'N';
+		},
+		// END CUSTOM ADDITION
 
 		getFindingSeverity: function(finding) {
 			let severity = "None"

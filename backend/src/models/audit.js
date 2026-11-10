@@ -32,6 +32,8 @@ var Finding = {
     status:                 {type: Number, enum: [0,1], default: 1}, // 0: done, 1: redacting
     category:               String,
     customFields:           [customField],
+    parentId:               Schema.Types.ObjectId,  // CUSTOM ADDITION
+    parentStatus:           Number,  // CUSTOM ADDITION
     retestStatus:           {type: String, enum: ['ok', 'ko', 'unknown', 'partial']},
     retestDescription:      String
 }

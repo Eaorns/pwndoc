@@ -303,6 +303,8 @@ module.exports = function(app, io) {
         if (req.body.status !== undefined) finding.status = req.body.status;
         if (req.body.category) finding.category = req.body.category
         if (req.body.customFields) finding.customFields = req.body.customFields
+        if (req.body.parentId) finding.parentId = req.body.parentId  // CUSTOM ADDITION
+        if (req.body.parentStatus) finding.parentStatus = req.body.parentStatus  // CUSTOM ADDITION
 
         if (settings.reviews.enabled && settings.reviews.private.removeApprovalsUponUpdate) {
             Audit.updateGeneral(acl.isAllowed(req.decodedToken.roles, 'audits:update-all'), req.params.auditId, req.decodedToken.id, { approvals: [] });

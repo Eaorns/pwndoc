@@ -164,7 +164,9 @@ export default {
                     cvssv3: vuln.cvssv3,
                     cvssv4: vuln.cvssv4,
                     category: vuln.category,
-                    customFields: Utils.filterCustomFields('finding', vuln.category, this.customFields, vuln.detail.customFields, this.auditParent.language)
+                    customFields: Utils.filterCustomFields('finding', vuln.category, this.customFields, vuln.detail.customFields, this.auditParent.language),
+                    parentId: vuln._id,  // CUSTOM ADDITION
+                    parentStatus: vuln.status  // CUSTOM ADDITION
                 };
             }
 
