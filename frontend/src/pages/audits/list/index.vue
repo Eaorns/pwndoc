@@ -25,7 +25,7 @@
             >
                 <template v-slot:top>
                     <q-input
-                    class="col-md-3"
+                    class="col-md-3 q-pr-sm"
                     :label="$t('searchFinds')"
                     v-model="search.finding"
                     @keyup.enter="getAudits"
@@ -34,6 +34,18 @@
                         <template v-slot:append>
                             <q-btn flat icon="search" @click="getAudits" />
                             <q-icon v-if="search.finding" name="cancel" @click.stop="search.finding = null; getAudits()" class="cursor-pointer" />
+                        </template>
+                    </q-input>
+                    <q-input
+                    class="col-md-3 q-pr-sm"
+                    :label="$t('searchConclusions')"
+                    v-model="search.summary"
+                    @keyup.enter="getAudits"
+                    outlined
+                    >
+                        <template v-slot:append>
+                            <q-btn flat icon="search" @click="getAudits" />
+                            <q-icon v-if="search.summary" name="cancel" @click.stop="search.summary = null; getAudits()" class="cursor-pointer" />
                         </template>
                     </q-input>
                     <q-toggle :label="$t('myAudits')" v-model="myAudits" />

@@ -22,6 +22,21 @@ module.exports = function(app, io) {
             filters.$or = [{type: 'default'}, {type: {$exists:false}}]
         if (req.query.type && ['multi', 'retest'].includes(req.query.type))
             filters.type = req.query.type
+
+        // BEGIN CUSTOM ADDITION
+        if (req.query.summaryContent) {
+            filters.sections = {
+                $elemMatch: {
+                    field: 'summary',
+                    customFields: {
+                        $elemMatch: {
+                            text: new RegExp(utils.escapeRegex(req.query.summaryContent), 'i')
+                        }
+                    }
+                }
+            };
+        }
+        // END CUSTOM ADDITION
             
         Audit.getAudits(acl.isAllowed(req.decodedToken.roles, 'audits:read-all'), req.decodedToken.id, filters)
         .then(msg => {

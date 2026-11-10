@@ -619,6 +619,7 @@ export default {
     auditTypes: 'Audit Types',
     auditType: 'Audit Type',
     searchFinds: 'Search Finding',
+    searchConclusions: 'Search Conclusions',
     myAudits: 'My Audits',
     usersConnected: 'Users Connected',
     awaitingMyReview: 'Awaiting my review',

@@ -53,7 +53,7 @@ export default {
                 {label:'All', value:0}
             ],
             // Search filter
-            search: {finding: '', auditType: '', name: '', language: '', company: '', users: '', date: ''},
+            search: {finding: '', summary: '', auditType: '', name: '', language: '', company: '', users: '', date: ''},  // CUSTOM ADDITION: summary
             myAudits: false,
             displayConnected: false,
             displayReadyForReview: false,
@@ -71,6 +71,7 @@ export default {
 
     mounted: function() {
         this.search.finding = this.$route.query.findingTitle;
+        this.search.summary = this.$route.params.summary;  // CUSTOM ADDITION
 
         if (userStore.isAllowed('audits:users-connected'))
             this.visibleColumns.push('connected')
@@ -177,7 +178,7 @@ export default {
 
         getAudits: function() {
             this.loading = true
-            AuditService.getAudits({findingTitle: this.search.finding})
+            AuditService.getAudits({findingTitle: this.search.finding, summaryContent: this.search.summary})  // CUSTOM ADDITION: summaryContent
             .then((data) => {
                 this.audits = data.data.datas
                 this.loading = false

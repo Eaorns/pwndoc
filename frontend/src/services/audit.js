@@ -6,6 +6,10 @@ export default {
     if (filters) {
       if (filters.findingTitle)
         params.findingTitle = filters.findingTitle;
+      // BEGIN CUSTOM ADDITION
+      if (filters.summaryContent)
+        params.summaryContent = filters.summaryContent;
+      // END CUSTOM ADDITION
       if (filters.type)
         params.type = filters.type
     }
