@@ -152,6 +152,14 @@
                         <q-btn v-if="userStore.isAllowed('users:update') && !props.row.enabled" size="sm" flat round color="positive" icon="check_circle" @click="setEnabled(props.row, true)">
                             <q-tooltip anchor="bottom middle" self="center left" :delay="500" class="text-bold">{{$t('btn.enable')}}</q-tooltip>
                         </q-btn>
+                        <!-- BEGIN CUSTOM ADDITION -->
+                         <q-btn v-if="userStore.isAllowed('users:update')" size="sm" flat round color="negative" icon="delete" @click="confirmDeleteCollab(props.row)">
+                            <q-tooltip anchor="bottom middle" self="center left" :delay="500" class="text-bold">{{ $t('tooltip.delete') }}</q-tooltip>
+                        </q-btn>
+                        <!-- <q-btn v-if="userStore.isAllowed('users:update')" size="sm" flat color="negative" icon="fa fa-trash" @click="confirmDeleteCollab(props.row)">
+                            <q-tooltip anchor="bottom middle" self="center left" :delay="500" content-class="text-bold">{{ $t('tooltip.delete') }}</q-tooltip>
+                        </q-btn> -->
+                        <!-- END CUSTOM ADDITION -->
                     </q-td>
                 </template> 
 

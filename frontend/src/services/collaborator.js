@@ -13,6 +13,12 @@ export default {
     return api.put(`users/${collabId}`, collab)
   },
 
+  // BEGIN CUSTOM ADDITION
+  deleteCollab: function(collabId) {
+    return  api.delete(`users/${collabId}`)
+  },
+  // END CUSTOM ADDITION
+
   bulkRoles: function(payload) {
     return api.put('users/bulk-roles', payload)
   },

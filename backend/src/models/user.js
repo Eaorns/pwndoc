@@ -84,7 +84,7 @@ UserSchema.statics.create = function (user) {
 // Get all users
 UserSchema.statics.getAll = function () {
     return new Promise((resolve, reject) => {
-        var query = this.find();
+        var query = this.find({ username: { $ne: 'deleteduser' } }); // CUSTOM ADDITION: Do not select the 'deleteduser'-user.
         query.select('username firstname lastname email phone jobTitle roles totpEnabled enabled');
         query.exec()
         .then(function(rows) {
@@ -541,6 +541,104 @@ UserSchema.methods.getToken = function (userAgent) {
         })
     })
 }
+
+// CUSTOM ADDITION: Delete user
+UserSchema.statics.delete = async function (userId) {
+    // Cast once so arrayFilters (not auto-cast like query filters) compare ObjectId to ObjectId.
+    // The route passes req.params.id as a string.
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+
+    const replacementUser = await this.findOneAndUpdate(
+        { username: "deleteduser" },
+        {
+            $setOnInsert: {
+                username: "deleteduser",
+                firstname: "Deleted",
+                lastname: "User"
+            }
+        },
+        {
+            new: true,
+            upsert: true
+        }
+    );
+
+    var Vulnerability = mongoose.model('Vulnerability');
+    await Vulnerability.updateMany(
+        { creator: userObjectId },
+        { $set: { creator: replacementUser._id } }
+    );
+
+    var VulnerabilityUpdate = mongoose.model('VulnerabilityUpdate');
+    await VulnerabilityUpdate.updateMany(
+        { creator: userObjectId },
+        { $set: { creator: replacementUser._id } }
+    );
+
+    var LanguageToolRule = mongoose.model('LanguageToolRule');
+    await LanguageToolRule.updateMany(
+        { creator: userObjectId },
+        { $set: { creator: replacementUser._id } }
+    );
+
+    var Audit = mongoose.model('Audit');
+    await Audit.updateMany(
+        { collaborators: userObjectId },
+        { $set: { "collaborators.$[user]": replacementUser._id } },
+        { arrayFilters: [{ user: userObjectId }] }
+    );
+
+    await Audit.updateMany(
+        { reviewers: userObjectId },
+        { $set: { "reviewers.$[user]": replacementUser._id } },
+        { arrayFilters: [{ user: userObjectId }] }
+    );
+
+    await Audit.updateMany(
+        { creator: userObjectId },
+        { $set: { creator: replacementUser._id } }
+    );
+
+    await Audit.updateMany(
+        { approvals: userObjectId },
+        { $set: { "approvals.$[user]": replacementUser._id } },
+        { arrayFilters: [{ user: userObjectId }] }
+    );
+
+    // Comments authored by the deleted user (nested in Audit.comments[])
+    await Audit.updateMany(
+        { "comments.author": userObjectId },
+        { $set: { "comments.$[comment].author": replacementUser._id } },
+        { arrayFilters: [{ "comment.author": userObjectId }] }
+    );
+
+    // Replies authored by the deleted user (nested in Audit.comments[].replies[])
+    await Audit.updateMany(
+        { "comments.replies.author": userObjectId },
+        { $set: { "comments.$[comment].replies.$[reply].author": replacementUser._id } },
+        { arrayFilters: [{ "comment.replies.author": userObjectId }, { "reply.author": userObjectId }] }
+    );
+
+    // Revoke the user's API keys instead of reassigning them: a key authenticates
+    // as its owner, so handing it to 'deleteduser' would keep live credentials active.
+    var ApiKey = mongoose.model('ApiKey');
+    await ApiKey.deleteMany({ user: userObjectId });
+
+    const deletedUser = await this.findOneAndDelete({
+        _id: userObjectId,
+        username: { $ne: "deleteduser" }
+    });
+
+    if (!deletedUser) {
+        throw {
+            fn: "NotFound",
+            message: "User Id not found"
+        };
+    }
+
+    return deletedUser;
+};
+// END CUSTOM ADDITION
 
 var User = mongoose.model('User', UserSchema);
 module.exports = User;

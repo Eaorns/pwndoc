@@ -349,6 +349,15 @@ module.exports = function(app) {
         }
     });
 
+    // CUSTOM ADDITION
+    // Delete any user (admin only). Replace user with 'deleted user'-user for traceability.
+    app.delete("/api/users/:id", acl.hasPermission('users:delete'), function(req, res) {
+        User.delete(req.params.id)
+        .then(msg => Response.Ok(res, 'Client deleted successfully'))
+            .catch(err => Response.Internal(res, err))
+    });
+    // END CUSTOM ADDITION
+
     app.put("/api/users/bulk-status", acl.hasPermission('users:update'), async function(req, res) {
         if (!Array.isArray(req.body.userIds) || req.body.userIds.some(id => !mongoose.isValidObjectId(id)) || typeof req.body.enabled !== 'boolean') {
             Response.BadParameters(res, 'Required parameters: userIds, enabled')
