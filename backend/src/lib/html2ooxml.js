@@ -316,7 +316,6 @@ function html2ooxml(html, style = '') {
                                 },
                                 children: cell.text,
                             }))
-                            tmpCells.forEach((v) => console.log(v))
                         });
 
                         tblRows.push(new docx.TableRow({
@@ -332,10 +331,6 @@ function html2ooxml(html, style = '') {
                             type: "pct"
                         }
                     });
-                    console.log(cParagraph)
-                    tblRows.forEach((v) => console.log(v, '\n'))
-                    console.log()
-                    console.log()
 
                     paragraphs.push(cParagraph);
                     cParagraph = null;
