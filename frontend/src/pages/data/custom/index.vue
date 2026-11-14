@@ -195,6 +195,31 @@
                                     </div>
                                 </q-item-section>
                             </q-item>
+                            <!-- BEGIN CUSTOM ADDITION -->
+                            <q-item>
+                                <q-item-section>
+                                    <div v-for="(language,idx) of languages">
+                                        <q-select 
+                                        ref="validate-auditType-alttemplate"
+                                        v-model="newAuditType.alttemplates[idx]" 
+                                        label-slot
+                                        :options="getTemplateOptionsLanguage(language.locale)" 
+                                        option-value="template"
+                                        option-label="name" 
+                                        options-sanitize
+                                        map-options
+                                        outlined
+                                        :rules="[val => !!val || 'Field is required']"
+                                        lazy-rules="ondemand"
+                                        >
+                                            <template v-slot:label>
+                                                {{language.language}} {{$t('alttemplate')}} <span class="text-red">*</span>
+                                            </template>
+                                        </q-select>
+                                    </div>
+                                </q-item-section>
+                            </q-item>
+                            <!-- END CUSTOM ADDITION -->
                             <q-item>
                                 <q-item-section>
                                     <q-select 
@@ -277,6 +302,26 @@
                                                     </div>
                                                 </q-item-section>
                                             </q-item>
+                                            <!-- BEGIN CUSTOM ADDITION -->
+                                             <q-item>
+                                                <q-item-section>
+                                                    <div v-for="(language,idx) of languages" class="q-mb-sm">
+                                                        <q-select 
+                                                        v-if="auditType.alttemplates && auditType.alttemplates[idx]"
+                                                        readonly
+                                                        v-model="auditType.alttemplates[idx].template"
+                                                        :label="`${language.language} ${$t('template')}`"
+                                                        :options="templates" 
+                                                        option-value="_id"
+                                                        option-label="name"
+                                                        map-options 
+                                                        options-sanitize
+                                                        outlined
+                                                        />
+                                                    </div>
+                                                </q-item-section>
+                                            </q-item>
+                                            <!-- END CUSTOM ADDITION -->
                                             <q-item>
                                                 <q-item-section>
                                                     <q-select 
@@ -406,6 +451,52 @@
                                                                 </div>
                                                             </q-item-section>
                                                         </q-item>
+                                                        <!-- BEGIN CUSTOM ADDITION -->
+                                                         <q-item>
+                                                            <q-item-section>
+                                                                <div v-for="(language,idx) of languages">
+                                                                    <q-select 
+                                                                    ref="validate-template-edit"
+                                                                    v-if="auditType.alttemplates[idx]"
+                                                                    v-model="auditType.alttemplates[idx].template" 
+                                                                    label-slot
+                                                                    :options="getTemplateOptionsLanguage(language.locale)" 
+                                                                    option-value="template"
+                                                                    option-label="name" 
+                                                                    options-sanitize
+                                                                    map-options
+                                                                    emit-value
+                                                                    outlined
+                                                                    :rules="[val => !!val || 'Field is required']"
+                                                                    lazy-rules="ondemand"
+                                                                    >
+                                                                        <template v-slot:label>
+                                                                            {{language.language}} {{$t('template')}} <span class="text-red">*</span>
+                                                                        </template>
+                                                                    </q-select>
+                                                                    <!-- needed for updating old Audit Types without templates -->
+                                                                    <q-select 
+                                                                    v-else
+                                                                    ref="validate-template-edit2"
+                                                                    v-model="auditType.alttemplates[idx]" 
+                                                                    label-slot
+                                                                    :options="getTemplateOptionsLanguage(language.locale)" 
+                                                                    option-value="template"
+                                                                    option-label="name" 
+                                                                    options-sanitize
+                                                                    map-options
+                                                                    outlined
+                                                                    :rules="[val => !!val || 'Field is required']"
+                                                                    lazy-rules="ondemand"
+                                                                    >
+                                                                        <template v-slot:label>
+                                                                            {{language.language}} {{$t('alttemplate')}} <span class="text-red">*</span>
+                                                                        </template>
+                                                                    </q-select>
+                                                                </div>
+                                                            </q-item-section>
+                                                        </q-item>
+                                                        <!-- END CUSTOM ADDITION -->
                                                         <q-item>
                                                             <q-item-section>
                                                                 <q-select 

@@ -1,0 +1,7 @@
+{
+    "auditBaseName": "Testreport",
+    "auditAltBaseName": "Managementreport",
+
+    "targetTableName": "Targets",
+    "fromTo": "to"
+}

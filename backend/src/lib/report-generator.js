@@ -21,8 +21,15 @@ var translate = require('../translate')
 var $t
 
 // Generate document with docxtemplater
-async function generateDoc(audit) {
-    var templatePath = `${__basedir}/../report-templates/${audit.template.name}.${audit.template.ext || 'docx'}`
+async function generateDoc(audit, altreport=false) {  // CUSTOM ADDITION: altreport. May change this to a more modular way of selecting what template to use in the future.
+
+    // BEGIN CUSTOM ADDITION
+    if (altreport)
+        var templatePath = `${__basedir}/../report-templates/${audit.alttemplate.name}.${audit.alttemplate.ext || 'docx'}`
+    else
+    // END CUSTOM ADDITION
+        var templatePath = `${__basedir}/../report-templates/${audit.template.name}.${audit.template.ext || 'docx'}`
+    
     var content = fs.readFileSync(templatePath, "binary");
     
     var zip = new PizZip(content);

@@ -92,6 +92,21 @@
                     outlined 
                     :readonly="frontEndAuditState !== AUDIT_VIEW_STATE.EDIT"
                     /> 
+                    <!-- BEGIN CUSTOM ADDITION -->
+                    <q-select
+                    class="col-md-6 col-12"
+                    :label="$t('alttemplate')"
+                    v-model="audit.alttemplate"
+                    :options="templates"
+                    option-value="_id"
+                    option-label="name"
+                    emit-value
+                    map-options
+                    options-sanitize
+                    outlined 
+                    :readonly="frontEndAuditState !== AUDIT_VIEW_STATE.EDIT"
+                    />
+                    <!-- END CUSTOM ADDITION -->
                 </div>
             </q-card-section>
 

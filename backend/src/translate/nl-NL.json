@@ -18,5 +18,17 @@
     "Required": "Verplicht",
     "Unchanged": "Ongewijzigd",
     "Changed": "Verandert",
-    "No Category": "Geen category"
+    "No Category": "Geen category",
+
+    "from {0} to {1}": "van {0} tot {1}",
+    "on {0} and {1}": "op {0} en {1}",
+    "on {0}": "op {0}",
+    "{0} day": "{0} dag",
+    "{0} days": "{0} dagen",
+
+    "auditBaseName": "Testrapportage",
+    "auditAltBaseName": "Managementrapportage",
+
+    "targetTableName": "Doelobjecten",
+    "fromTo": "t/m"
 }

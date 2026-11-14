@@ -362,6 +362,7 @@ module.exports = function(app) {
         // Required parameters
         auditType.name = req.body.name;
         auditType.templates = req.body.templates;
+        auditType.alttemplates = req.body.alttemplates;  // CUSTOM ADDITION
 
         // Optional parameters
         if (req.body.sections) auditType.sections = req.body.sections
@@ -408,6 +409,7 @@ module.exports = function(app) {
                 auditTypes.push({
                     name: e.name,
                     templates: e.templates,
+                    alttemplates: e.alttemplates,  // CUSTOM ADDITION
                     sections: e.sections,
                     hidden: ['network'],
                     stage: e.stage
@@ -416,6 +418,7 @@ module.exports = function(app) {
                 auditTypes.push({
                     name: e.name,
                     templates: e.templates,
+                    alttemplates: e.alttemplates,  // CUSTOM ADDITION
                     sections: e.sections,
                     hidden: e.hidden,
                     stage: 'default'

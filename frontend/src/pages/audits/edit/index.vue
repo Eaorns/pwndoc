@@ -87,7 +87,7 @@
 							</q-item-section>
 						</template>
 						<q-item-section side class="topButtonSection">
-							<q-btn class="audit-download-btn" flat color="info" @click="generateReport">
+							<q-btn round class="audit-download-btn" flat color="info" @click="generateReport">
 								<q-badge
 									v-if="hasAnyAuditDraft"
 									data-testid="download-draft-badge"
@@ -101,6 +101,23 @@
 								<i class="fa fa-download fa-lg"></i>
 							</q-btn>
 						</q-item-section>
+						<!-- BEGIN CUSTOM ADDITION -->
+						<q-item-section side class="topButtonSection">
+							<q-btn round flat color="warning" @click="generateAltReport">
+								<q-badge
+									v-if="hasAnyAuditDraft"
+									data-testid="download-draft-badge"
+									class="audit-download-btn__badge"
+									color="orange"
+									rounded
+								/>
+								<q-tooltip anchor="bottom middle" self="center left" :delay="500" class="text-bold">
+									{{ hasAnyAuditDraft ? $t('tooltip.downloadReportWithUnsavedDrafts') : $t('tooltip.downloadAltReport') }}
+								</q-tooltip>
+								<i class="fa fa-download fa-lg"></i>
+							</q-btn>
+						</q-item-section>
+						<!-- END CUSTOM ADDITION -->
 					</q-item>
 
 					<q-item :to='"/audits/"+auditId+"/general"'>
@@ -1078,6 +1095,72 @@ export default {
 				})
 			})
 		},
+
+		// BEGIN CUSTOM ADDITION
+		generateAltReport: function() {
+			if (this.hasAnyAuditDraft) {
+				Dialog.create({
+					title: $t('msg.auditDraftDownloadWarningTitle'),
+					message: $t('msg.auditDraftDownloadWarningMessage'),
+					ok: {label: $t('btn.generateAnyway'), color: 'warning'},
+					cancel: {label: $t('btn.cancel'), color: 'white'},
+					focus: 'cancel'
+				})
+				.onOk(() => {
+					this.generateAltReportDownload()
+				})
+				return
+			}
+
+			this.generateAltReportDownload()
+		},
+
+		generateAltReportDownload: function() {
+			const downloadNotif = Notify.create({
+				spinner: QSpinnerGears,
+				message: 'Generating the Report',
+				color: "blue",
+				timeout: 0,
+				group: false
+			})
+			AuditService.generateAuditAltReport(this.auditId)
+			.then(response => {
+				var blob = new Blob([response.data], {type: "application/octet-stream"});
+				var link = document.createElement('a');
+				link.href = window.URL.createObjectURL(blob);
+				link.download = response.headers['content-disposition'].split('"')[1];
+				document.body.appendChild(link);
+				link.click();
+				link.remove();
+				
+				downloadNotif({
+					icon: 'done',
+					spinner: false,
+					message: 'Report successfully generated',
+					color: 'green',
+					timeout: 2500
+				})
+			})
+			.catch( async err => {
+				var message = "Error generating template"
+				if (err.response && err.response.data) {
+					var blob = new Blob([err.response.data], {type: "application/json"})
+					var blobData = await this.BlobReader(blob)
+					message = JSON.parse(blobData).datas
+				}
+				downloadNotif()
+				Notify.create({
+					message: message,
+					type: 'negative',
+					textColor:'white',
+					position: 'top',
+					closeBtn: true,
+					timeout: 0,
+					classes: "text-pre-wrap"
+				})
+			})
+		},
+		// END CUSTOM ADDITION
 
 		updateSortFindings: function() {
 			AuditService.updateAuditSortFindings(this.auditId, {sortFindings: this.audit.sortFindings})

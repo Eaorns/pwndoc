@@ -10,6 +10,7 @@ var Template = {
 var AuditTypeSchema = new Schema({
     name:   {type: String, unique: true},
     templates: [Template],
+    alttemplates: [Template],  // CUSTOM ADDITION
     sections: [{type: String, ref: 'CustomSection'}],
     hidden: [{type: String, enum: ['network', 'findings']}],
     stage: {type: String, enum: ['default', 'retest', 'multi'], default: 'default'},
@@ -24,7 +25,7 @@ var AuditTypeSchema = new Schema({
 AuditTypeSchema.statics.getAll = () => {
     return new Promise((resolve, reject) => {
         var query = AuditType.find().sort({order: 1});
-        query.select('name templates sections hidden stage')
+        query.select('name templates alttemplates sections hidden stage')  // CUSTOM ADDITION: alttemplates
         query.lean()
         query.exec()
         .then((rows) => {
@@ -47,7 +48,7 @@ AuditTypeSchema.statics.getAll = () => {
 AuditTypeSchema.statics.getByName = (name) => {
     return new Promise((resolve, reject) => {
         var query = AuditType.findOne({name: name});
-        query.select('name templates sections hidden stage')
+        query.select('name templates alttemplates sections hidden stage')  // CUSTOM ADDITION: alttemplates
         query.lean()
         query.exec()
         .then((rows) => {

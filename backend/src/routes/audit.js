@@ -7,6 +7,7 @@ module.exports = function(app, io) {
     var _ = require('lodash');
     var utils = require('../lib/utils');
     var Settings = require('mongoose').model('Settings');
+    var translate = require('../translate');  // CUSTOM ADDITION
 
     /* ### AUDITS LIST ### */
 
@@ -248,6 +249,7 @@ module.exports = function(app, io) {
             update.scope = req.body.scope.map(item => {return {name: item}});
         }
         if (req.body.template) update.template = req.body.template;
+        if (req.body.alttemplate) update.alttemplate = req.body.alttemplate;  // CUSTOM ADDITION
         if (req.body.customFields) update.customFields = req.body.customFields;
         if (settings.reviews.enabled && settings.reviews.private.removeApprovalsUponUpdate) update.approvals = [];
 
@@ -449,7 +451,12 @@ module.exports = function(app, io) {
                 throw ({fn: 'BadParameters', message: 'Template not defined'})
 
             var reportDoc = await reportGenerator.generateDoc(audit);
-            Response.SendFile(res, `${audit.name.replace(/[\\\/:*?"<>|]/g, "")}.${audit.template.ext || 'docx'}`, reportDoc);
+
+            // BEGIN CUSTOM ALTERATION
+            console.log(audit)
+            var audit_name = `${translate.translate('auditBaseName', locale=audit.locale)}-${('shortName' in audit.company && audit.company.shortName != undefined) ? audit.company.shortName : audit.company.name}-${new Date(audit.date_start).getFullYear().toString().slice(-2)}.${audit.customFields.find((e) => e.customField.label == 'Projectnummer').text}-v0.1`.replace(/[\\\/:*?"<>|]/g, "");
+            Response.SendFile(res, `${audit_name}.${audit.template.ext || 'docx'}`, reportDoc);
+            // END CUSTOM ALTERATION
         })
         .catch(err => {
             if (err.code === "ENOENT")
@@ -458,6 +465,36 @@ module.exports = function(app, io) {
                 Response.Internal(res, err)
         });
     });
+
+    // BEGIN CUSTOM ADDITION
+    // TODO: Merge this in a neater way with the function above, to prevent code repetition and improve future compatability
+    // Generate Alt Report for specific audit
+    app.get("/api/audits/:auditId/generatealt", acl.hasPermission('audits:read'), function(req, res){
+        Audit.getAudit(acl.isAllowed(req.decodedToken.roles, 'audits:read-all'), req.params.auditId, req.decodedToken.id)
+        .then(async audit => {
+            var settings = await Settings.getAll();
+
+            if (settings.reviews.enabled && settings.reviews.public.mandatoryReview && audit.state !== 'APPROVED') {
+                Response.Forbidden(res, "Audit was not approved therefore cannot be exported.");
+                return;
+            }
+
+            if (!audit.alttemplate)
+                throw ({fn: 'BadParameters', message: 'Template not defined'})
+
+            var reportDoc = await reportGenerator.generateDoc(audit, true);
+
+            var audit_name = `${translate.translate('auditAltBaseName', locale=audit.language)}-${('shortName' in audit.company && audit.company.shortName != undefined) ? audit.company.shortName : audit.company.name}-${new Date(audit.date_start).getFullYear().toString().slice(-2)}.${audit.customFields.find((e) => e.customField.label == 'Projectnummer').text}-v0.1`.replace(/[\\\/:*?"<>|]/g, "");
+            Response.SendFile(res, `${audit_name}.${audit.template.ext || 'docx'}`, reportDoc);
+        })
+        .catch(err => {
+            if (err.code === "ENOENT")
+                Response.BadParameters(res, 'Template File not found')
+            else
+                Response.Internal(res, err)
+        });
+    });
+    // END CUSTOM ADDITION
 
     // Update sort options of an audit
     app.put("/api/audits/:auditId/sortfindings", acl.hasPermission('audits:update'), async function(req, res) {

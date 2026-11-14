@@ -76,6 +76,12 @@ export default {
     return api.get(`audits/${auditId}/generate`, {responseType: 'blob'})
   },
 
+  // BEGIN CUSTOM ADDITION
+  generateAuditAltReport: function(auditId) {
+    return api.get(`audits/${auditId}/generatealt`, {responseType: 'blob'})
+  },
+  // END CUSTOM ADDITION
+
   updateAuditSortFindings: function(auditId, audit) {
     return api.put(`audits/${auditId}/sortfindings`, audit)
   },

@@ -38,6 +38,7 @@ export default {
             userStore: userStore,
             Utils: Utils,
             templates: [],
+            alttemplates: [],  // CUSTOM ADDITION
 
             languages: [],
             newLanguage: {locale: "", language: ""},
@@ -45,8 +46,8 @@ export default {
             editLanguage: false,
 
             auditTypes: [],
-            newAuditType: {name: "", templates: [], sections: [], hidden: [], stage: 'default'},
-            editAuditTypes: [],
+            newAuditType: {name: "", templates: [], alttemplates: [], sections: [], hidden: [], stage: 'default'},
+            editAuditTypes: [],  // CUSTOM ADDITION
             editAuditType: false,
 
             vulnTypes: [],
@@ -297,6 +298,7 @@ export default {
                     this.draftRecovery.clearDraft()
                 this.newAuditType.name = "";
                 this.newAuditType.templates = [];
+                this.newAuditType.alttemplates = [];  // CUSTOM ADDITION
                 this.newAuditType.sections = [];
                 this.newAuditType.hidden = [];
                 this.getAuditTypes();

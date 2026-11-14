@@ -11,6 +11,7 @@ function translate(message, locale = gLocale) {
         let availableLocales = fs.readdirSync(__dirname)
             .filter(file => file.endsWith('.json'))
             .map(file => file.replace('.json', ''))
+        console.log(availableLocales, locale)
         if (!availableLocales.includes(locale)) {
             return message
         }
