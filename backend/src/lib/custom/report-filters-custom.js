@@ -370,6 +370,65 @@ defaultFilters.countCategory = function(input, category) {
     return count;
 }
 
+defaultFilters.digidTable = function(input) {
+    // Set colwidth attributes for th and td elements in a 4-column table
+    // Column widths: 15, 35, 40, 10 for columns 1-4
+    const colWidths = [15, 35, 40, 10];
+    
+    // Process each table row
+    return input.replace(/<tr\b([^>]*)>([\s\S]*?)<\/tr>/gi, (match, trAttrs, rowContent) => {
+        let cellIndex = 0;
+        
+        // Replace all th and td cells in this row (including content)
+        const processedRow = rowContent.replace(/<(th|td)\b([^>]*)>([\s\S]*?)<\/(th|td)>/gi, (cellMatch, tagName, cellAttrs, cellContent, closingTag) => {
+            const currentIndex = cellIndex;
+            cellIndex++;
+            
+            const width = colWidths[Math.min(currentIndex, colWidths.length - 1)];
+            const normalizedTag = tagName.toLowerCase();
+            const normalizedClosingTag = closingTag.toLowerCase();
+            
+            // Add colwidth if not already present (case-insensitive check)
+            let newAttrs = cellAttrs;
+            if (!cellAttrs.toLowerCase().includes('colwidth=')) {
+                const attrPrefix = cellAttrs.trim() === '' ? '' : ' ' + cellAttrs.trim();
+                newAttrs = ` colwidth="${width}"${attrPrefix}`;
+            }
+            
+            // For 4th column (index 3), transform Y/N values to Ja/Nee
+            let newContent = cellContent;
+            if (currentIndex === 3) {
+                // Strip HTML tags and trim whitespace before comparing
+                const strippedContent = cellContent.replace(/<[^>]*>/g, '').trim();
+                if (strippedContent === 'Y') {
+                    newContent = '<p>__PLACEHOLDER_DIGID_YES__</p>';
+                } else if (strippedContent === 'N') {
+                    // newContent = '<p>Nee</p>';
+                    newContent = `<p>__PLACEHOLDER_DIGID_NO__</p>`
+                }
+            }
+            
+            return `<${normalizedTag}${newAttrs}>${newContent}</${normalizedClosingTag}>`;
+        });
+        
+        return `<tr${trAttrs}>${processedRow}</tr>`;
+    });
+}
+
+defaultFilters.digidTableSubstituter = function(input) {
+    input = input.replace(
+        '<w:r><w:t xml:space="preserve">__PLACEHOLDER_DIGID_YES__</w:t></w:r>',
+        '<w:r w:rsidRPr="00523A53"><w:rPr><w:color w:val="00B050"/><w:sz w:val="44"/><w:szCs w:val="44"/></w:rPr><w:sym w:font="Wingdings" w:char="F0FC"/></w:r>'
+    );
+    input = input.replace(
+        '<w:r><w:t xml:space="preserve">__PLACEHOLDER_DIGID_NO__</w:t></w:r>', 
+        '<w:r w:rsidRPr="006540EF"><w:rPr><w:color w:val="FF0000"/><w:sz w:val="44"/><w:szCs w:val="44"/></w:rPr><w:t>X</w:t></w:r>'
+    );
+    console.log(input)
+    return input;
+}
+
+
 // END CUSTOM ADDITIONS
 
 // Convert input CVSS criteria into French: {input | criteriaFR}
